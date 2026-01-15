@@ -14,7 +14,7 @@ public class UserListener {
         this.messaging = messaging;
     }
 
-    @RabbitListener(queues = "${rabbitmq.user.queue.created}")
+    @RabbitListener(queues = "${rabbitmq.users.queue.created}")
     public void onUserCreateEvent(NotificationEventDTO dto) {
         messaging.convertAndSend("/topic/users/created", dto);
     }
