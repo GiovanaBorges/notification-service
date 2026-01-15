@@ -1,13 +1,14 @@
 package com.notification.notification_service.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
@@ -18,8 +19,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.broker.SimpleBrokerMessageHandler;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
@@ -47,46 +50,61 @@ class WebSocketFullIntegrationTest {
 
     private final Map<String, BlockingQueue<NotificationEventDTO>> topicQueues = new HashMap<>();
 
+    @Autowired
+    ApplicationContext context;
+
+   
     @BeforeEach
-    void setup() throws InterruptedException, ExecutionException {
-        List<Transport> transports = List.of(
-                new WebSocketTransport(new StandardWebSocketClient()));
+void setup() throws Exception {
 
-        SockJsClient sockJsClient = new SockJsClient(transports);
+    // 1️⃣ Espera broker
+    await()
+        .atMost(5, TimeUnit.SECONDS)
+        .untilAsserted(() -> {
+            SimpleBrokerMessageHandler handler =
+                context.getBean(SimpleBrokerMessageHandler.class);
+            assertThat(handler.isRunning()).isTrue();
+        });
 
-        stompClient = new WebSocketStompClient(sockJsClient);
-        stompClient.setMessageConverter(new MappingJackson2MessageConverter());
-        // Conecta ao WebSocket
-        session = stompClient
-                .connectAsync("ws://localhost:" + port + "/ws", new StompSessionHandlerAdapter() {
-                })
-                .get(); // get() bloqueia até conectar
+    // 2️⃣ WebSocket client
+    List<Transport> transports = List.of(
+        new WebSocketTransport(new StandardWebSocketClient()));
 
-        // Tópicos que vamos testar
-        String[] topics = {
-                "/topic/bookings/created", "/topic/bookings/updated", "/topic/bookings/deleted",
-                "/topic/providers/created", "/topic/providers/updated", "/topic/providers/deleted",
-                "/topic/users/created"
-        };
+    SockJsClient sockJsClient = new SockJsClient(transports);
 
-        // Inscreve em cada tópico e cria uma queue para capturar mensagens
-        for (String topic : topics) {
-            BlockingQueue<NotificationEventDTO> queue = new LinkedBlockingDeque<>();
-            topicQueues.put(topic, queue);
+    stompClient = new WebSocketStompClient(sockJsClient);
+    stompClient.setMessageConverter(new MappingJackson2MessageConverter());
 
-            session.subscribe(topic, new StompFrameHandler() {
-                @Override
-                public Type getPayloadType(StompHeaders headers) {
-                    return NotificationEventDTO.class;
-                }
+    session = stompClient
+        .connectAsync("ws://localhost:" + port + "/ws", new StompSessionHandlerAdapter() {})
+        .get();
 
-                @Override
-                public void handleFrame(StompHeaders headers, Object payload) {
-                    queue.add((NotificationEventDTO) payload);
-                }
-            });
-        }
+    String[] topics = {
+        "/topic/bookings/created", "/topic/bookings/updated", "/topic/bookings/deleted",
+        "/topic/providers/created", "/topic/providers/updated", "/topic/providers/deleted",
+        "/topic/users/created"
+    };
+
+    for (String topic : topics) {
+        BlockingQueue<NotificationEventDTO> queue = new LinkedBlockingDeque<>();
+        topicQueues.put(topic, queue);
+
+        session.subscribe(topic, new StompFrameHandler() {
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return NotificationEventDTO.class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders headers, Object payload) {
+                queue.add((NotificationEventDTO) payload);
+            }
+        });
     }
+
+    // 3️⃣ Dá tempo pro subscribe registrar (importante no CI)
+    Thread.sleep(300);
+}
 
     @Test
     void testAllTopicsReceiveMessages() throws InterruptedException {
@@ -122,10 +140,13 @@ class WebSocketFullIntegrationTest {
 
     private void assertReceived(String topic, String id, String message, NotificationTypeENUM type)
             throws InterruptedException {
-        NotificationEventDTO received = topicQueues.get(topic).poll(2, TimeUnit.SECONDS);
-        assertThat(received).isNotNull();
-        assertThat(received.bookingId()).isEqualTo(id);
-        assertThat(received.message()).isEqualTo(message);
-        assertThat(received.notification()).isEqualTo(type);
+         NotificationEventDTO received =
+        await()
+            .atMost(5, TimeUnit.SECONDS)
+            .until(() -> topicQueues.get(topic).poll(), Objects::nonNull);
+
+    assertThat(received.bookingId()).isEqualTo(id);
+    assertThat(received.message()).isEqualTo(message);
+    assertThat(received.notification()).isEqualTo(type);
     }
 }
