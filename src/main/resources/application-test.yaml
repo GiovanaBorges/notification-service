@@ -1,0 +1,16 @@
+rabbitmq:
+  booking:
+    queue:
+      created: test.booking.created
+      updated: test.booking.updated
+      deleted: test.booking.deleted
+
+  provider:
+    queue:
+      created: test.provider.created
+      updated: test.provider.updated
+      deleted: test.provider.deleted
+
+  users:
+    queue:
+      created: test.users.created
