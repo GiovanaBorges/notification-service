@@ -1,0 +1,28 @@
+name: Setup .env from .env.example
+description: Cria .env e injeta variáveis sensíveis
+
+inputs:
+  rabbitmq-username:
+    required: true
+  rabbitmq-password:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Criar .env
+      shell: bash
+      run: cp .env.example .env
+
+    - name: Inserir secrets no .env
+      shell: bash
+      run: |
+        echo "RABBITMQ_USERNAME=${{ inputs.rabbitmq-username }}" >> .env
+        echo "RABBITMQ_PASSWORD=${{ inputs.rabbitmq-password }}" >> .env
+
+    - name: Exportar variáveis
+      shell: bash
+      run: |
+        set -a
+        source .env
+        set +a
