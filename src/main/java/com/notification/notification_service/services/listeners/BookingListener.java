@@ -14,17 +14,17 @@ public class BookingListener {
         this.messaging = messaging;
     }
 
-    @RabbitListener(queues = "${rabbitmq.bookings.queue.created}")
+    @RabbitListener(queues = "${rabbitmq.booking.queue.created}")
     public void onBookingCreateEvent(NotificationEventDTO dto) {
         messaging.convertAndSend("/topic/bookings/created", dto);
     }
 
-    @RabbitListener(queues = "${rabbitmq.bookings.queue.updated}")
+    @RabbitListener(queues = "${rabbitmq.booking.queue.updated}")
     public void onBookingUpdateEvent(NotificationEventDTO dto) {
         messaging.convertAndSend("/topic/bookings/updated", dto);
     }
 
-    @RabbitListener(queues = "${rabbitmq.bookings.queue.deleted}")
+    @RabbitListener(queues = "${rabbitmq.booking.queue.deleted}")
     public void onBookingDeleteEvent(NotificationEventDTO dto) {
         messaging.convertAndSend("/topic/bookings/deleted", dto);
     }
