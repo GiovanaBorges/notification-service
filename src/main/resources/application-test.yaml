@@ -14,3 +14,11 @@ rabbitmq:
   users:
     queue:
       created: test.users.created
+
+spring:
+  rabbitmq:
+    listener:
+      simple:
+        auto-startup: false
+      direct:
+        auto-startup: false
