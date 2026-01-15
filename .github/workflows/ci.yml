@@ -6,7 +6,23 @@ on:
   workflow_dispatch:
 
 jobs:
+  gitleaks:
+    name: 🔐 Gitleaks - Secrets Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   build-and-test:
+    needs: gitleaks
     runs-on: ubuntu-latest
 
     steps: 
