@@ -7,8 +7,6 @@ spring:
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USERNAME:admin}
     password: ${RABBITMQ_PASSWORD:admin}
- 
-
 
 rabbitmq:
 # ============================================
@@ -59,4 +57,48 @@ rabbitmq:
       updated: ${RABBITMQ_BOOKING_QUEUE_UPDATED}
       deleted: ${RABBITMQ_BOOKING_QUEUE_DELETED}
 
-  
+
+resilience4j:
+  retry:
+    instances:
+      bookingListenerRetry:
+        max-attempts: 3
+        wait-duration: 3s
+      userListenerRetry:
+        max-attempts: 3
+        wait-duration: 3s
+      providerListenerRetry:
+        max-attempts: 3
+        wait-duration: 3s
+  ratelimiter:
+    instances:
+      bookingListenerRateLimiter:
+        limit-for-period: 10
+        limit-refresh-period: 20s
+        timeout-duration: 0s
+      userListenerRateLimiter:
+        limit-for-period: 10
+        limit-refresh-period: 20s
+        timeout-duration: 0s
+      providerListenerRateLimiter:
+        limit-for-period: 10
+        limit-refresh-period: 20s
+        timeout-duration: 0s
+  circuitbreaker:
+    instances:
+      bookingListenerCircuitBreaker:
+        register-health-indicator: true
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+      userListenerCircuitBreaker:
+        register-health-indicator: true
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+      providerListenerCircuitBreaker:
+        register-health-indicator: true
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+
+logging:
+  level:
+    root: DEBUG
