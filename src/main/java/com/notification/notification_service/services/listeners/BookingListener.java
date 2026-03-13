@@ -1,31 +1,32 @@
 package com.notification.notification_service.services.listeners;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.notification.notification_service.DTO.NotificationEventDTO;
+import com.notification.notification_service.services.events.BookingEventService;
+
 
 @Service
 public class BookingListener {
-     private final SimpMessagingTemplate messaging;
+    private final BookingEventService bookingEventService;
 
-    public BookingListener(SimpMessagingTemplate messaging) {
-        this.messaging = messaging;
+    public BookingListener(BookingEventService bookingEventService) {
+        this.bookingEventService = bookingEventService;
     }
 
     @RabbitListener(queues = "${rabbitmq.booking.queue.created}")
     public void onBookingCreateEvent(NotificationEventDTO dto) {
-        messaging.convertAndSend("/topic/bookings/created", dto);
+        bookingEventService.handleBookingEvent(dto, "/topic/bookings/created", "created");
     }
 
     @RabbitListener(queues = "${rabbitmq.booking.queue.updated}")
     public void onBookingUpdateEvent(NotificationEventDTO dto) {
-        messaging.convertAndSend("/topic/bookings/updated", dto);
+        bookingEventService.handleBookingEvent(dto, "/topic/bookings/updated", "updated");
     }
 
     @RabbitListener(queues = "${rabbitmq.booking.queue.deleted}")
     public void onBookingDeleteEvent(NotificationEventDTO dto) {
-        messaging.convertAndSend("/topic/bookings/deleted", dto);
+        bookingEventService.handleBookingEvent(dto, "/topic/bookings/deleted", "deleted");
     }
 }

@@ -1,33 +1,31 @@
 package com.notification.notification_service.services.listeners;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.notification.notification_service.DTO.NotificationEventDTO;
+import com.notification.notification_service.services.events.ProviderEventService;
 
 @Service
 public class ProviderListener {
 
-    private final SimpMessagingTemplate messaging;
+    private ProviderEventService providerEventService;
 
-    public ProviderListener(SimpMessagingTemplate messaging) {
-        this.messaging = messaging;
+    public ProviderListener(ProviderEventService providerEventService) {
+        this.providerEventService = providerEventService;
     }
-
-    @RabbitListener(queues = "${rabbitmq.provider.queue.created}")
+     @RabbitListener(queues = "${rabbitmq.provider.queue.created}")
     public void onProviderCreateEvent(NotificationEventDTO dto) {
-        messaging.convertAndSend("/topic/providers/created", dto);
+        providerEventService.handleProviderEvent(dto, "/topic/providers/created", "created");
     }
 
     @RabbitListener(queues = "${rabbitmq.provider.queue.updated}")
     public void onProviderUpdateEvent(NotificationEventDTO dto) {
-        messaging.convertAndSend("/topic/providers/updated", dto);
+        providerEventService.handleProviderEvent(dto, "/topic/providers/updated", "updated");
     }
 
     @RabbitListener(queues = "${rabbitmq.provider.queue.deleted}")
     public void onProviderDeleteEvent(NotificationEventDTO dto) {
-        messaging.convertAndSend("/topic/providers/deleted", dto);
+        providerEventService.handleProviderEvent(dto, "/topic/providers/deleted", "deleted");
     }
-
 }

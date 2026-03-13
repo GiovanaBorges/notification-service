@@ -1,21 +1,18 @@
 package com.notification.notification_service.services.listeners;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Service;
 
 import com.notification.notification_service.DTO.NotificationEventDTO;
+import com.notification.notification_service.services.events.UserEventService;
 
-@Service
 public class UserListener {
-     private final SimpMessagingTemplate messaging;
-
-    public UserListener(SimpMessagingTemplate messaging) {
-        this.messaging = messaging;
+    private final UserEventService userEventService;
+    public UserListener(UserEventService userEventService) {
+        this.userEventService = userEventService;
     }
 
     @RabbitListener(queues = "${rabbitmq.users.queue.created}")
     public void onUserCreateEvent(NotificationEventDTO dto) {
-        messaging.convertAndSend("/topic/users/created", dto);
+        userEventService.handleUserEvent(dto, "/topic/users/created", "CREATED");
     }
 }
