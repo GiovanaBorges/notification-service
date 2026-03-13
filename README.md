@@ -8,6 +8,7 @@
 ![Resilience4j](https://img.shields.io/badge/Resilience4j-CircuitBreaker-red)
 ![Testcontainers](https://img.shields.io/badge/Testcontainers-Integration%20Testing-2496ED)
 ![Build](https://img.shields.io/badge/build-passing-brightgreen)
+[![codecov](https://codecov.io/gh/GiovanaBorges/notification-service/branch/main/graph/badge.svg)](https://codecov.io/gh/GiovanaBorges/notification-service)
 
 A **real-time notification service** built with **Spring Boot** that consumes events from **RabbitMQ** and delivers them to frontend clients through **WebSocket connections**.
 
