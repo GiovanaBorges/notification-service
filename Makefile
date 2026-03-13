@@ -2,7 +2,7 @@
 -include .env.secrets
 export
 
-IMAGE_FULL=$(DOCKER_USER)/$(IMAGE_NAME):$(TAG)
+IMAGE_FULL=$(DEV_DOCKER_USER)/$(IMAGE_NAME):$(TAG)
 ENV ?= dev
 
 .PHONY: up build login push
@@ -17,7 +17,7 @@ build:
 
 # 🔐 Login no Docker Hub
 login:
-	echo $(DOCKER_PASSWORD) | docker login -u $(DOCKER_USER) --password-stdin
+	echo $(DEV_DOCKER_PASSWORD) | docker login -u $(DEV_DOCKER_USER) --password-stdin
 
 # 📤 Push da imagem
 push:
