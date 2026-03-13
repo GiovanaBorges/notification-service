@@ -1,3 +1,6 @@
+server:
+  port: 8085
+  
 spring:
   application:
     name: notification-service
@@ -9,53 +12,57 @@ spring:
     password: ${RABBITMQ_PASSWORD:admin}
 
 rabbitmq:
-# ============================================
-# PROVIDER AVAILABILITY EVENT CONFIG
-# ============================================
+
+  # ============================================
+  # PROVIDER EVENT CONFIG
+  # ============================================
   provider:
-    exchange: ${RABBITMQ_PROVIDER_EXCHANGE}
+    exchange: ${RABBITMQ_PROVIDER_EXCHANGE:provider.exchange}
+
     routing:
-      created: ${RABBITMQ_PROVIDER_ROUTING_CREATED}
-      updated: ${RABBITMQ_PROVIDER_ROUTING_UPDATED}
-      deleted: ${RABBITMQ_PROVIDER_ROUTING_DELETED}
+      created: ${RABBITMQ_PROVIDER_ROUTING_CREATED:provider.created}
+      updated: ${RABBITMQ_PROVIDER_ROUTING_UPDATED:provider.updated}
+      deleted: ${RABBITMQ_PROVIDER_ROUTING_DELETED:provider.deleted}
 
     queue:
-      created: ${RABBITMQ_PROVIDER_QUEUE_CREATED}
-      updated: ${RABBITMQ_PROVIDER_QUEUE_UPDATED}
-      deleted: ${RABBITMQ_PROVIDER_QUEUE_DELETED}
+      created: ${RABBITMQ_PROVIDER_CREATED_QUEUE:provider.created.queue}
+      updated: ${RABBITMQ_PROVIDER_UPDATED_QUEUE:provider.updated.queue}
+      deleted: ${RABBITMQ_PROVIDER_DELETED_QUEUE:provider.deleted.queue}
 
     dlq:
-      created: ${RABBITMQ_PROVIDER_DLQ_CREATED}
-      updated: ${RABBITMQ_PROVIDER_DLQ_UPDATED}
-      deleted: ${RABBITMQ_PROVIDER_DLQ_DELETED}
+      created: ${RABBITMQ_PROVIDER_DLQ_CREATED:provider.created.dlq}
+      updated: ${RABBITMQ_PROVIDER_DLQ_UPDATED:provider.updated.dlq}
+      deleted: ${RABBITMQ_PROVIDER_DLQ_DELETED:provider.deleted.dlq}
 
-# ============================================
-# USERS AVAILABILITY EVENT CONFIG
-# ============================================
+  # ============================================
+  # USERS EVENT CONFIG
+  # ============================================
 
   users:
-    exchange: ${RABBITMQ_USERS_EXCHANGE}
+    exchange: ${RABBITMQ_USERS_EXCHANGE:users.exchange}
+
     routing:
-      created: ${RABBITMQ_USERS_ROUTING_CREATED}
+      created: ${RABBITMQ_USERS_ROUTING_CREATED:users.created}
+
     queue:
-      created: ${RABBITMQ_USERS_QUEUE_CREATED}
+      created: ${RABBITMQ_USERS_CREATED_QUEUE:users.created.queue}
 
-
-# ============================================
-# BOOKING AVAILABILITY EVENT CONFIG
-# ============================================
+  # ============================================
+  # BOOKING EVENT CONFIG
+  # ============================================
 
   booking:
-    exchange: ${RABBITMQ_BOOKING_EXCHANGE}
+    exchange: ${RABBITMQ_BOOKING_EXCHANGE:booking.exchange}
+
     routing:
-      created: ${RABBITMQ_BOOKING_ROUTING_CREATED}
-      updated: ${RABBITMQ_BOOKING_ROUTING_UPDATED}
-      deleted: ${RABBITMQ_BOOKING_ROUTING_DELETED}
+      created: ${RABBITMQ_BOOKING_ROUTING_CREATED:booking.created}
+      updated: ${RABBITMQ_BOOKING_ROUTING_UPDATED:booking.updated}
+      deleted: ${RABBITMQ_BOOKING_ROUTING_DELETED:booking.deleted}
 
     queue:
-      created: ${RABBITMQ_BOOKING_QUEUE_CREATED}
-      updated: ${RABBITMQ_BOOKING_QUEUE_UPDATED}
-      deleted: ${RABBITMQ_BOOKING_QUEUE_DELETED}
+      created: booking.created.queue
+      updated: booking.updated.queue
+      deleted: booking.deleted.queue
 
 
 resilience4j:
@@ -101,4 +108,4 @@ resilience4j:
 
 logging:
   level:
-    root: DEBUG
+    root: INFO
