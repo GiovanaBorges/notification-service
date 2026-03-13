@@ -4,25 +4,25 @@ import static org.mockito.Mockito.verify;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.notification.notification_service.DTO.NotificationEventDTO;
 import com.notification.notification_service.ENUMS.NotificationTypeENUM;
+import com.notification.notification_service.services.events.BookingEventService;
 import com.notification.notification_service.services.listeners.BookingListener;
 
+@ExtendWith(MockitoExtension.class)
 public class BookingListenerTest {
+
     @Mock
-    private SimpMessagingTemplate messaging;
+    private BookingEventService bookingEventService;
 
+    @InjectMocks
     private BookingListener bookingListener;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        bookingListener = new BookingListener(messaging);
-    }
 
     @Test
     void testOnBookingCreateEvent() {
@@ -30,7 +30,7 @@ public class BookingListenerTest {
 
         bookingListener.onBookingCreateEvent(dto);
 
-        verify(messaging).convertAndSend("/topic/bookings/created", dto);
+        verify(bookingEventService).handleBookingEvent(dto, "/topic/bookings/created", "created");
     }
 
     @Test
@@ -39,7 +39,7 @@ public class BookingListenerTest {
 
         bookingListener.onBookingUpdateEvent(dto);
 
-        verify(messaging).convertAndSend("/topic/bookings/updated", dto);
+        verify(bookingEventService).handleBookingEvent(dto, "/topic/bookings/updated", "updated");
     }
 
     @Test
@@ -48,6 +48,6 @@ public class BookingListenerTest {
 
         bookingListener.onBookingDeleteEvent(dto);
 
-        verify(messaging).convertAndSend("/topic/bookings/deleted", dto);
+        verify(bookingEventService).handleBookingEvent(dto, "/topic/bookings/deleted", "deleted");
     }
 }

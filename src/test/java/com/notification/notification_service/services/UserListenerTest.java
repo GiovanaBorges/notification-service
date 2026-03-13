@@ -5,25 +5,26 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import com.notification.notification_service.DTO.NotificationEventDTO;
 import com.notification.notification_service.ENUMS.NotificationTypeENUM;
+import com.notification.notification_service.services.events.UserEventService;
 import com.notification.notification_service.services.listeners.UserListener;
 
+@ExtendWith(MockitoExtension.class)
 public class UserListenerTest {
-    @Mock
-    private SimpMessagingTemplate messaging;
 
+    @InjectMocks
     private UserListener userListener;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        userListener = new UserListener(messaging);
-    }
+    @Mock
+    private UserEventService userEventService;
 
     @Test
     void testOnUserCreateEvent() {
@@ -31,8 +32,6 @@ public class UserListenerTest {
 
         userListener.onUserCreateEvent(dto);
 
-        verify(messaging).convertAndSend("/topic/users/created", dto);
-
-        verifyNoMoreInteractions(messaging);
+        verify(userEventService).handleUserEvent(dto,"/topic/users/created", "CREATED");
     }
 }

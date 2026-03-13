@@ -5,25 +5,24 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.notification.notification_service.DTO.NotificationEventDTO;
 import com.notification.notification_service.ENUMS.NotificationTypeENUM;
+import com.notification.notification_service.services.events.ProviderEventService;
 import com.notification.notification_service.services.listeners.ProviderListener;
 
+@ExtendWith(MockitoExtension.class)
 public class ProviderListenerTest {
     @Mock
-    private SimpMessagingTemplate messaging;
+    private ProviderEventService providerEventService;
 
+    @InjectMocks
     private ProviderListener providerListener;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        providerListener = new ProviderListener(messaging);
-    }
 
     @Test
     void testOnProviderCreateEvent() {
@@ -31,11 +30,9 @@ public class ProviderListenerTest {
 
         providerListener.onProviderCreateEvent(dto);
 
-        // Verifica envio correto
-        verify(messaging).convertAndSend("/topic/providers/created", dto);
-
         // Garante que nenhuma outra fila foi chamada
-        verifyNoMoreInteractions(messaging);
+        verify(providerEventService).handleProviderEvent(dto, "/topic/providers/created", "created");
+
     }
 
     @Test
@@ -44,8 +41,7 @@ public class ProviderListenerTest {
 
         providerListener.onProviderUpdateEvent(dto);
 
-        verify(messaging).convertAndSend("/topic/providers/updated", dto);
-        verifyNoMoreInteractions(messaging);
+        verify(providerEventService).handleProviderEvent(dto, "/topic/providers/updated", "updated");
     }
 
     @Test
@@ -54,7 +50,6 @@ public class ProviderListenerTest {
 
         providerListener.onProviderDeleteEvent(dto);
 
-        verify(messaging).convertAndSend("/topic/providers/deleted", dto);
-        verifyNoMoreInteractions(messaging);
+        verify(providerEventService).handleProviderEvent(dto, "/topic/providers/deleted", "deleted");
     }
 }
